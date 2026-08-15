@@ -1,8 +1,7 @@
 import java.lang.reflect.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 public class Main {
 
@@ -21,6 +20,7 @@ public class Main {
         ExecutorService service = Executors.newFixedThreadPool(10);
 
         Object instance = Class.forName(clazz.getName()).newInstance();
+        List<Future<Integer>> resultList = new ArrayList<>();
 
         for (Method m : clazz.getDeclaredMethods()) {
             if (m.getName().startsWith("test")) {
@@ -41,10 +41,13 @@ public class Main {
                         }
                     });
 
-                    failedCount += resultThread.get();
+                    resultList.add(resultThread);
                 }
             }
         }
+
+        for(var r : resultList)
+            failedCount += r.get();
 
         service.shutdownNow();
 
